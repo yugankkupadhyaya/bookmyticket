@@ -18,7 +18,9 @@ mongoose
   .then(() => console.log(`Connected to MongoDB: ${DB_NAME}`))
   .catch((err) => console.error('MongoDB connection error:', err));
 
+console.log('Registering movie routes...');
 app.use(movieRoutes);
+console.log('Movie routes registered!');
 
 app.get('/', (req, res) => {
   res.send('BookMyTicket server is running');

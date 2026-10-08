@@ -4,10 +4,10 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install -g pnpm && pnpm install --prod
+RUN npm install -g pnpm && pnpm install
 
 COPY . .
 
 EXPOSE 3000
 
-CMD ["node", "index.js"]
+CMD ["pnpm", "dev"]
