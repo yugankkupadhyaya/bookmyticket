@@ -1,66 +1,66 @@
-import { Theatre } from '../models/theatre.model.js';
+import { Theater } from '../models/theater.model.js';
 
-export const createTheatre = async (data) => {
+export const createTheater = async (data) => {
   try {
-    const response = await Theatre.create(data);
+    const response = await Theater.create(data);
     return response;
   } catch (error) {
-    console.error('Error creating theatre:', error);
+    console.error('Error creating theater:', error);
     throw error;
   }
 };
 
-export const fetchTheatres = async () => {
+export const fetchTheaters = async () => {
   try {
-    const theatres = await Theatre.find();
-    return theatres;
+    const theaters = await Theater.find();
+    return theaters;
   } catch (error) {
-    console.error('Error fetching theatres:', error);
+    console.error('Error fetching theaters:', error);
     throw error;
   }
 };
 
-export const getTheatreById = async (id) => {
+export const getTheaterById = async (id) => {
   try {
-    const theatre = await Theatre.findById(id);
-    return theatre;
+    const theater = await Theater.findById(id);
+    return theater;
   } catch (error) {
-    console.error('Error fetching theatre:', error);
+    console.error('Error fetching theater:', error);
     throw error;
   }
 };
 
-export const updateTheatre = async (id, data) => {
+export const updateTheater = async (id, data) => {
   try {
-    const theatre = await Theatre.findByIdAndUpdate(id, data, { new: true, runValidators: true });
-    return theatre;
+    const theater = await Theater.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+    return theater;
   } catch (error) {
-    console.error('Error updating theatre:', error);
+    console.error('Error updating theater:', error);
     throw error;
   }
 };
 
-export const deleteTheatre = async (id) => {
+export const deleteTheater = async (id) => {
   try {
-    const theatre = await Theatre.findByIdAndDelete(id);
-    return theatre;
+    const theater = await Theater.findByIdAndDelete(id);
+    return theater;
   } catch (error) {
-    console.error('Error deleting theatre:', error);
+    console.error('Error deleting theater:', error);
     throw error;
   }
 };
 
-export const fetchTheatresByFilter = async (query) => {
+export const fetchTheatersByFilter = async (query) => {
   try {
     const filter = {};
     if (query.city) filter.city = query.city;
     if (query.pincode) filter.pincode = Number(query.pincode);
     if (query.name) filter.name = { $regex: query.name, $options: 'i' };
 
-    const theatres = await Theatre.find(filter);
-    return theatres;
+    const theaters = await Theater.find(filter);
+    return theaters;
   } catch (error) {
-    console.error('Error fetching theatres by filter:', error);
+    console.error('Error fetching theaters by filter:', error);
     throw error;
   }
 };

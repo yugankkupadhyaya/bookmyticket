@@ -1,79 +1,79 @@
 import {
-  createTheatre,
-  fetchTheatres,
-  getTheatreById,
-  updateTheatre,
-  deleteTheatre,
-  fetchTheatresByFilter,
+  createTheater,
+  fetchTheaters,
+  getTheaterById,
+  updateTheater,
+  deleteTheater,
+  fetchTheatersByFilter,
 } from '../services/theater.service.js';
 import { errorResponse, successResponse } from '../utils/response.js';
 
-export const createTheatreController = async (req, res) => {
+export const createTheaterController = async (req, res) => {
   try {
     const data = req.body;
-    const response = await createTheatre(data);
-    res.status(201).json(successResponse('Theatre created successfully', response));
+    const response = await createTheater(data);
+    res.status(201).json(successResponse('Theater created successfully', response));
   } catch (error) {
-    console.error('Error creating theatre:', error);
-    res.status(500).json(errorResponse('Error creating theatre', error));
+    console.error('Error creating theater:', error);
+    res.status(500).json(errorResponse('Error creating theater', error));
   }
 };
 
-export const getAllTheatresController = async (req, res) => {
+export const getAllTheatersController = async (req, res) => {
   try {
-    const response = await fetchTheatres();
-    res.status(200).json(successResponse('Theatres retrieved successfully', response));
+    const response = await fetchTheaters();
+    res.status(200).json(successResponse('Theaters retrieved successfully', response));
   } catch (error) {
-    console.error('Error retrieving theatres:', error);
-    res.status(500).json(errorResponse('Error retrieving theatres', error));
+    console.error('Error retrieving theaters:', error);
+    res.status(500).json(errorResponse('Error retrieving theaters', error));
   }
 };
 
-export const getTheatreByIdController = async (req, res) => {
+export const getTheaterByIdController = async (req, res) => {
   try {
-    const response = await getTheatreById(req.params.id);
+    const response = await getTheaterById(req.params.id);
     if (!response) {
-      return res.status(404).json(errorResponse('Theatre not found', 'Theatre not found'));
+      return res.status(404).json(errorResponse('Theater not found', 'Theater not found'));
     }
-    res.status(200).json(successResponse('Theatre retrieved successfully', response));
+    res.status(200).json(successResponse('Theater retrieved successfully', response));
   } catch (error) {
-    console.error('Error retrieving theatre:', error);
-    res.status(500).json(errorResponse('Error retrieving theatre', error));
+    console.error('Error retrieving theater:', error);
+    res.status(500).json(errorResponse('Error retrieving theater', error));
   }
 };
 
-export const updateTheatreController = async (req, res) => {
+export const updateTheaterController = async (req, res) => {
   try {
-    const response = await updateTheatre(req.params.id, req.body);
+    const response = await updateTheater(req.params.id, req.body);
     if (!response) {
-      return res.status(404).json(errorResponse('Theatre not found', 'Theatre not found'));
+      return res.status(404).json(errorResponse('Theater not found', 'Theater not found'));
     }
-    res.status(200).json(successResponse('Theatre updated successfully', response));
+    res.status(200).json(successResponse('Theater updated successfully', response));
   } catch (error) {
-    console.error('Error updating theatre:', error);
-    res.status(500).json(errorResponse('Error updating theatre', error));
+    console.error('Error updating theater:', error);
+    res.status(500).json(errorResponse('Error updating theater', error));
   }
 };
 
-export const deleteTheatreController = async (req, res) => {
+export const deleteTheaterController = async (req, res) => {
   try {
-    const response = await deleteTheatre(req.params.id);
+    const response = await deleteTheater(req.params.id);
     if (!response) {
-      return res.status(404).json(errorResponse('Theatre not found', 'Theatre not found'));
+      return res.status(404).json(errorResponse('Theater not found', 'Theater not found'));
     }
-    res.status(200).json(successResponse('Theatre deleted successfully', response));
+    res.status(200).json(successResponse('Theater deleted successfully', response));
   } catch (error) {
-    console.error('Error deleting theatre:', error);
-    res.status(500).json(errorResponse('Error deleting theatre', error));
+    console.error('Error deleting theater:', error);
+    res.status(500).json(errorResponse('Error deleting theater', error));
   }
 };
 
-export const getTheatresByFilterController = async (req, res) => {
+export const getTheatersByFilterController = async (req, res) => {
   try {
-    const response = await fetchTheatresByFilter(req.query);
-    res.status(200).json(successResponse('Theatres retrieved successfully by filter', response));
+    const response = await fetchTheatersByFilter(req.query);
+    res.status(200).json(successResponse('Theaters retrieved successfully by filter', response));
   } catch (error) {
-    console.error('Error retrieving theatres by filter:', error);
-    res.status(500).json(errorResponse('Error retrieving theatres by filter', error));
+    console.error('Error retrieving theaters by filter:', error);
+    res.status(500).json(errorResponse('Error retrieving theaters by filter', error));
   }
 };

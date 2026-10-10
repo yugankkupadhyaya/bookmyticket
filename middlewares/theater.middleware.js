@@ -1,17 +1,17 @@
 import { errorResponse } from '../utils/response.js';
 
-const requiredTheatreFields = [
+const requiredTheaterFields = [
   'name',
   'pincode',
   'address',
   'city',
 ];
 
-export const validateTheatreRequestMiddleware = (req, res, next) => {
+export const validateTheaterRequestMiddleware = (req, res, next) => {
   const errors = {};
   const body = req.body ?? {};
 
-  for (const field of requiredTheatreFields) {
+  for (const field of requiredTheaterFields) {
     if (field === 'pincode') {
       if (typeof body[field] !== 'number' || isNaN(body[field])) {
         errors[field] = `${field} is required and must be a number`;
