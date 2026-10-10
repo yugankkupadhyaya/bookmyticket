@@ -1,4 +1,5 @@
 import { Theatre } from '../models/theatre.model.js';
+import { filterByFuzzyField } from '../utils/fuzzy-search.js';
 
 export const createTheatre = async (data) => {
   try {
@@ -53,11 +54,12 @@ export const deleteTheatre = async (id) => {
 export const fetchTheatresByFilter = async (query) => {
   try {
     const filter = {};
-    if (query.city) filter.city = query.city;
     if (query.pincode) filter.pincode = Number(query.pincode);
-    if (query.name) filter.name = { $regex: query.name, $options: 'i' };
 
-    const theatres = await Theatre.find(filter);
+    let theatres = await Theatre.find(filter);
+    if (query.city) theatres = filterByFuzzyField(theatres, 'city', query.city);
+    if (query.name) theatres = filterByFuzzyField(theatres, 'name', query.name);
+
     return theatres;
   } catch (error) {
     console.error('Error fetching theatres by filter:', error);

@@ -1,4 +1,5 @@
 import Movie from '../models/movie.model.js';
+import { filterByFuzzyField } from '../utils/fuzzy-search.js';
 
 const getMovieByIdService = async (id) => {
   try {
@@ -24,14 +25,13 @@ export const updateMovie = async (id, data) => {
   return movie;
 };
 
-export const fetchMovies = async (filter) => {
-  let query = {};
-  if (filter.name) {
-    query.name = filter.name;
-  }
-  let movies = await Movie.find(query);
-  if (!movies || movies.length === 0) {
+export const fetchMovies = async (filter = {}) => {
+  const movies = await Movie.find();
+  const filteredMovies = filter.name
+    ? filterByFuzzyField(movies, 'name', filter.name)
+    : movies;
+  if (!filteredMovies || filteredMovies.length === 0) {
     return { err: 'No movies found', code: 404 };
   }
-  return movies;
+  return filteredMovies;
 };
