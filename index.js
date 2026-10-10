@@ -1,7 +1,8 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import movieRoutes from './routes/movie.routes.js';
+
+import movieRouter from './routes/movie.routes.js';
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ mongoose
   .catch((err) => console.error('MongoDB connection error:', err));
 
 console.log('Registering movie routes...');
-app.use(movieRoutes);
+app.use(movieRouter);
 console.log('Movie routes registered!');
 
 app.get('/', (req, res) => {

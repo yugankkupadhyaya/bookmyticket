@@ -1,6 +1,6 @@
 import Movie from '../models/movie.model.js';
-import getMovieByIdService from '../services/movie.service.js';
-
+import getMovieByIdService, { fetchMovies } from '../services/movie.service.js';
+import { updateMovie } from '../services/movie.service.js';
 export const ErrorResponseBody = {
   err: {},
   data: {},
@@ -123,4 +123,65 @@ export const deleteMovieById = async (req, res) => {
       message: 'Error deleting movie',
     });
   }
-}
+};
+
+export const updateMovieById = async (req, res) => {
+  try {
+    console.log('Updating movie in MongoDB...');
+
+    const response = await updateMovie(req.params.id, req.body);
+
+    if (!response) {
+      return res.status(404).json({
+        success: false,
+        error: 'Movie not found',
+        data: null,
+        message: 'Movie not found',
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      error: {},
+      data: response,
+      message: 'Movie updated successfully',
+    });
+  } catch (error) {
+    console.error('Error updating movie:', error);
+
+    return res.status(500).json({
+      success: false,
+      error: error,
+      data: null,
+      message: 'Error updating movie',
+    });
+  }
+};
+
+export const getMoviesByFilter = async (req, res) => {
+  try {
+    const response = await fetchMovies(req.query);
+    if (!response || response.err) {
+      return res.status(response.code || 404).json({
+        success: false,
+        error: response.err || 'No movies found',
+        data: null,
+        message: 'No movies found for the given filter',
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      error: {},
+      data: response,
+      message: 'Movies retrieved successfully by filter',
+    });
+  } catch (error) {
+    console.error('Error retrieving movies by filter:', error);
+
+    return res.status(500).json({
+      success: false,
+      error: error,
+      data: null,
+      message: 'Error retrieving movies by filter',
+    });
+  }
+};
