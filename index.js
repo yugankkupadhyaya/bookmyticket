@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
 import movieRouter from './routes/movie.routes.js';
-import theaterRouter from './routes/theater.routes.js';
+import theatreRouter from './routes/theatre.routes.js';
 
 dotenv.config();
 
@@ -20,7 +20,7 @@ mongoose
   .then(() => console.log(`Connected to MongoDB: ${DB_NAME}`))
   .catch((err) => console.error('MongoDB connection error:', err));
 app.use('/mba/api/v1/movies', movieRouter);
-app.use('/mba/api/v1/theaters', theaterRouter);
+app.use('/mba/api/v1/theatres', theatreRouter);
 app.get('/', (req, res) => {
   res.send('BookMyTicket server is running');
 });

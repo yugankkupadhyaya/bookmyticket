@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const theaterSchema = new mongoose.Schema(
+const theatreSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -29,4 +29,4 @@ const theaterSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const Theater = mongoose.model('Theater', theaterSchema);
+export const Theatre = mongoose.model('Theatre', theatreSchema);
