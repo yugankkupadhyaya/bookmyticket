@@ -21,6 +21,13 @@ export const validateTheatreRequestMiddleware = (req, res, next) => {
     }
   }
 
+  if (
+    body.rating !== undefined &&
+    (typeof body.rating !== 'number' || !Number.isFinite(body.rating) || body.rating < 0 || body.rating > 5)
+  ) {
+    errors.rating = 'rating must be a number between 0 and 5';
+  }
+
   if (Object.keys(errors).length > 0) {
     return res.status(400).json(errorResponse('Validation failed', errors));
   }

@@ -25,6 +25,12 @@ const theatreSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    rating: {
+      type: Number,
+      min: 0,
+      max: 5,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

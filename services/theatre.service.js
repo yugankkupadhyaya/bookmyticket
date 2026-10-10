@@ -64,3 +64,13 @@ export const fetchTheatresByFilter = async (query) => {
     throw error;
   }
 };
+
+export const fetchTheatresByRating = async (minRating) => {
+  try {
+    const theatres = await Theatre.find({ rating: { $gte: Number(minRating) } });
+    return theatres;
+  } catch (error) {
+    console.error('Error fetching theatres by rating:', error);
+    throw error;
+  }
+};

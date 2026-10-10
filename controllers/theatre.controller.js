@@ -5,6 +5,7 @@ import {
   updateTheatre,
   deleteTheatre,
   fetchTheatresByFilter,
+  fetchTheatresByRating,
 } from '../services/theatre.service.js';
 import { errorResponse, successResponse } from '../utils/response.js';
 
@@ -75,5 +76,31 @@ export const getTheatresByFilterController = async (req, res) => {
   } catch (error) {
     console.error('Error retrieving theatres by filter:', error);
     res.status(500).json(errorResponse('Error retrieving theatres by filter', error));
+  }
+};
+
+
+export const getTheatresByRatingController = async (req, res) => {
+  try {
+    const { minRating } = req.query;
+    const parsedMinRating = Number(minRating);
+
+    if (
+      minRating === undefined ||
+      minRating === '' ||
+      !Number.isFinite(parsedMinRating) ||
+      parsedMinRating < 0 ||
+      parsedMinRating > 5
+    ) {
+      return res
+        .status(400)
+        .json(errorResponse('Invalid minRating', 'minRating must be a number between 0 and 5'));
+    }
+
+    const response = await fetchTheatresByRating(parsedMinRating);
+    res.status(200).json(successResponse('Theatres retrieved successfully by rating', response));
+  } catch (error) {
+    console.error('Error retrieving theatres by rating:', error);
+    res.status(500).json(errorResponse('Error retrieving theatres by rating', error));
   }
 };
