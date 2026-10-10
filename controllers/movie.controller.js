@@ -1,19 +1,12 @@
 import Movie from '../models/movie.model.js';
 import getMovieByIdService, { fetchMovies } from '../services/movie.service.js';
 import { updateMovie } from '../services/movie.service.js';
-export const ErrorResponseBody = {
-  err: {},
-  data: {},
-  message: 'Something went wrong while processing the request',
-  success: false,
-};
-
-export const SuccessResponseBody = {
-  err: {},
-  data: {},
-  message: 'Suceessfully processed the request',
-  success: true,
-};
+import {
+  ErrorResponseBody,
+  SuccessResponseBody,
+  errorResponse,
+  successResponse,
+} from '../utils/response.js';
 
 export const createMovie = async (req, res) => {
   console.log('POST /movies request received');
@@ -24,21 +17,11 @@ export const createMovie = async (req, res) => {
 
     console.log('Movie created successfully:', movie);
 
-    return res.status(201).json({
-      success: true,
-      error: {},
-      data: movie,
-      message: 'Movie created successfully',
-    });
+    return res.status(201).json(successResponse('Movie created successfully', movie));
   } catch (error) {
     console.error('Error creating movie:', error);
 
-    return res.status(500).json({
-      success: false,
-      error: error,
-      data: null,
-      message: 'Error creating movie',
-    });
+    return res.status(500).json(errorResponse('Error creating movie', error));
   }
 };
 
@@ -53,21 +36,11 @@ export const getAllMovies = async (req, res) => {
     console.log(`Movies fetched successfully. Count: ${movies.length}`);
     console.log('Movies:', movies);
 
-    return res.status(200).json({
-      success: true,
-      error: {},
-      data: movies,
-      message: 'Movies retrieved successfully',
-    });
+    return res.status(200).json(successResponse('Movies retrieved successfully', movies));
   } catch (error) {
     console.error('Error retrieving movies:', error);
 
-    return res.status(500).json({
-      success: false,
-      error: error,
-      data: null,
-      message: 'Error retrieving movies',
-    });
+    return res.status(500).json(errorResponse('Error retrieving movies', error));
   }
 };
 
@@ -77,20 +50,19 @@ export const getMovieById = async (req, res) => {
 
     const response = await getMovieByIdService(req.params.id);
     if (response.err) {
-      ErrorResponseBody.err = response.err;
-      return res.status(response.code).json(ErrorResponseBody);
+      const errorResponse = { ...ErrorResponseBody };
+      errorResponse.error = response.err;
+      errorResponse.message = 'Error retrieving movie';
+      return res.status(response.code).json(errorResponse);
     }
-    SuccessResponseBody.data = response;
-    return res.status(200).json(SuccessResponseBody);
+    const successResponse = { ...SuccessResponseBody };
+    successResponse.data = response;
+    successResponse.message = 'Movie retrieved successfully';
+    return res.status(200).json(successResponse);
   } catch (error) {
     console.error('Error retrieving movie:', error);
 
-    return res.status(500).json({
-      success: false,
-      error: error,
-      data: null,
-      message: 'Error retrieving movie',
-    });
+    return res.status(500).json(errorResponse('Error retrieving movie', error));
   }
 };
 
@@ -100,28 +72,13 @@ export const deleteMovieById = async (req, res) => {
 
     const response = await Movie.findByIdAndDelete(req.params.id);
     if (!response) {
-      return res.status(404).json({
-        success: false,
-        error: 'Movie not found',
-        data: null,
-        message: 'Movie not found',
-      });
+      return res.status(404).json(errorResponse('Movie not found', 'Movie not found'));
     }
-    return res.status(200).json({
-      success: true,
-      error: {},
-      data: response,
-      message: 'Movie deleted successfully',
-    });
+    return res.status(200).json(successResponse('Movie deleted successfully', response));
   } catch (error) {
     console.error('Error deleting movie:', error);
 
-    return res.status(500).json({
-      success: false,
-      error: error,
-      data: null,
-      message: 'Error deleting movie',
-    });
+    return res.status(500).json(errorResponse('Error deleting movie', error));
   }
 };
 
@@ -132,28 +89,13 @@ export const updateMovieById = async (req, res) => {
     const response = await updateMovie(req.params.id, req.body);
 
     if (!response) {
-      return res.status(404).json({
-        success: false,
-        error: 'Movie not found',
-        data: null,
-        message: 'Movie not found',
-      });
+      return res.status(404).json(errorResponse('Movie not found', 'Movie not found'));
     }
-    return res.status(200).json({
-      success: true,
-      error: {},
-      data: response,
-      message: 'Movie updated successfully',
-    });
+    return res.status(200).json(successResponse('Movie updated successfully', response));
   } catch (error) {
     console.error('Error updating movie:', error);
 
-    return res.status(500).json({
-      success: false,
-      error: error,
-      data: null,
-      message: 'Error updating movie',
-    });
+    return res.status(500).json(errorResponse('Error updating movie', error));
   }
 };
 
@@ -161,27 +103,19 @@ export const getMoviesByFilter = async (req, res) => {
   try {
     const response = await fetchMovies(req.query);
     if (!response || response.err) {
-      return res.status(response.code || 404).json({
-        success: false,
-        error: response.err || 'No movies found',
-        data: null,
-        message: 'No movies found for the given filter',
-      });
+      return res.status(response?.code || 404).json(
+        errorResponse(
+          'No movies found for the given filter',
+          response?.err || 'No movies found',
+        ),
+      );
     }
-    return res.status(200).json({
-      success: true,
-      error: {},
-      data: response,
-      message: 'Movies retrieved successfully by filter',
-    });
+    return res
+      .status(200)
+      .json(successResponse('Movies retrieved successfully by filter', response));
   } catch (error) {
     console.error('Error retrieving movies by filter:', error);
 
-    return res.status(500).json({
-      success: false,
-      error: error,
-      data: null,
-      message: 'Error retrieving movies by filter',
-    });
+    return res.status(500).json(errorResponse('Error retrieving movies by filter', error));
   }
 };

@@ -1,3 +1,5 @@
+import { errorResponse } from '../utils/response.js';
+
 const requiredMovieFields = [
   'name',
   'description',
@@ -17,12 +19,7 @@ export const validateMovieRequestMiddleware = (req, res, next) => {
   }
 
   if (Object.keys(errors).length > 0) {
-    return res.status(400).json({
-      success: false,
-      err: errors,
-      data: null,
-      message: 'Validation failed',
-    });
+    return res.status(400).json(errorResponse('Validation failed', errors));
   }
 
   next();

@@ -10,14 +10,14 @@ import {
 import { validateMovieRequestMiddleware } from '../middlewares/movie.middleware.js';
 const movieRouter = express.Router();
 
-movieRouter.post('/mba/api/v1/movies', validateMovieRequestMiddleware, createMovie);
-movieRouter.get('/mba/api/v1/movies/filter', getMoviesByFilter);
-movieRouter.get('/mba/api/v1/movies', getAllMovies);
+movieRouter.post('/', validateMovieRequestMiddleware, createMovie);
+movieRouter.get('/filter', getMoviesByFilter);
+movieRouter.get('/', getAllMovies);
 
-movieRouter.get('/mba/api/v1/movies/:id', getMovieById);
+movieRouter.get('/:id', getMovieById);
 
-movieRouter.put('/mba/api/v1/movies/:id', validateMovieRequestMiddleware, updateMovieById);
+movieRouter.put('/:id', validateMovieRequestMiddleware, updateMovieById);
 
-movieRouter.delete('/mba/api/v1/movies/:id', deleteMovieById);
+movieRouter.delete('/:id', deleteMovieById);
 
 export default movieRouter;
