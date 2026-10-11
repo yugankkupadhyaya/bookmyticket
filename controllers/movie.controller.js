@@ -1,6 +1,7 @@
 import Movie from '../models/movie.model.js';
 import getMovieByIdService, { fetchMovies } from '../services/movie.service.js';
 import { updateMovie } from '../services/movie.service.js';
+import { getPagination } from '../utils/pagination.js';
 import {
   ErrorResponseBody,
   SuccessResponseBody,
@@ -31,12 +32,12 @@ export const getAllMovies = async (req, res) => {
   try {
     console.log('Fetching movies from MongoDB...');
 
-    const movies = await Movie.find();
+    const { page, limit } = getPagination(req.query);
+    const response = await fetchMovies({}, page, limit);
 
-    console.log(`Movies fetched successfully. Count: ${movies.length}`);
-    console.log('Movies:', movies);
+    console.log(`Movies fetched successfully. Count: ${response.movies.length}`);
 
-    return res.status(200).json(successResponse('Movies retrieved successfully', movies));
+    return res.status(200).json(successResponse('Movies retrieved successfully', response));
   } catch (error) {
     console.error('Error retrieving movies:', error);
 
@@ -101,7 +102,8 @@ export const updateMovieById = async (req, res) => {
 
 export const getMoviesByFilter = async (req, res) => {
   try {
-    const response = await fetchMovies(req.query);
+    const { page, limit } = getPagination(req.query);
+    const response = await fetchMovies(req.query, page, limit);
     if (!response || response.err) {
       return res.status(response?.code || 404).json(
         errorResponse(

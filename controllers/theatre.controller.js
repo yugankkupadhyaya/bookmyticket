@@ -6,8 +6,10 @@ import {
   deleteTheatre,
   fetchTheatresByFilter,
   fetchTheatresByRating,
+  updateMovieInTheatre,
 } from '../services/theatre.service.js';
 import { errorResponse, successResponse } from '../utils/response.js';
+import { getPagination } from '../utils/pagination.js';
 
 export const createTheatreController = async (req, res) => {
   try {
@@ -22,7 +24,8 @@ export const createTheatreController = async (req, res) => {
 
 export const getAllTheatresController = async (req, res) => {
   try {
-    const response = await fetchTheatres();
+    const { page, limit } = getPagination(req.query);
+    const response = await fetchTheatres(page, limit);
     res.status(200).json(successResponse('Theatres retrieved successfully', response));
   } catch (error) {
     console.error('Error retrieving theatres:', error);
@@ -71,14 +74,14 @@ export const deleteTheatreController = async (req, res) => {
 
 export const getTheatresByFilterController = async (req, res) => {
   try {
-    const response = await fetchTheatresByFilter(req.query);
+    const { page, limit } = getPagination(req.query);
+    const response = await fetchTheatresByFilter(req.query, page, limit);
     res.status(200).json(successResponse('Theatres retrieved successfully by filter', response));
   } catch (error) {
     console.error('Error retrieving theatres by filter:', error);
     res.status(500).json(errorResponse('Error retrieving theatres by filter', error));
   }
 };
-
 
 export const getTheatresByRatingController = async (req, res) => {
   try {
@@ -97,10 +100,27 @@ export const getTheatresByRatingController = async (req, res) => {
         .json(errorResponse('Invalid minRating', 'minRating must be a number between 0 and 5'));
     }
 
-    const response = await fetchTheatresByRating(parsedMinRating);
+    const { page, limit } = getPagination(req.query);
+    const response = await fetchTheatresByRating(parsedMinRating, page, limit);
     res.status(200).json(successResponse('Theatres retrieved successfully by rating', response));
   } catch (error) {
     console.error('Error retrieving theatres by rating:', error);
     res.status(500).json(errorResponse('Error retrieving theatres by rating', error));
+  }
+};
+
+export const updateMovieInTheatreController = async (req, res) => {
+  try {
+    const { movieIds, insert } = req.body;
+    const response = await updateMovieInTheatre(req.params.id, movieIds, insert);
+    res.status(200).json(successResponse('Movies updated successfully in theatre', response));
+  } catch (error) {
+    console.error('Error updating movies in theatre:', error);
+
+    if (error.message === 'Theatre not found') {
+      return res.status(404).json(errorResponse('Theatre not found', error.message));
+    }
+
+    res.status(500).json(errorResponse('Error updating movies in theatre', error));
   }
 };

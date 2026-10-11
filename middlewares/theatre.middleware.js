@@ -1,11 +1,7 @@
+import mongoose from 'mongoose';
 import { errorResponse } from '../utils/response.js';
 
-const requiredTheatreFields = [
-  'name',
-  'pincode',
-  'address',
-  'city',
-];
+const requiredTheatreFields = ['name', 'pincode', 'address', 'city'];
 
 export const validateTheatreRequestMiddleware = (req, res, next) => {
   const errors = {};
@@ -23,9 +19,41 @@ export const validateTheatreRequestMiddleware = (req, res, next) => {
 
   if (
     body.rating !== undefined &&
-    (typeof body.rating !== 'number' || !Number.isFinite(body.rating) || body.rating < 0 || body.rating > 5)
+    (typeof body.rating !== 'number' ||
+      !Number.isFinite(body.rating) ||
+      body.rating < 0 ||
+      body.rating > 5)
   ) {
     errors.rating = 'rating must be a number between 0 and 5';
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return res.status(400).json(errorResponse('Validation failed', errors));
+  }
+
+  next();
+};
+
+export const validateMovieUpdateRequestMiddleware = (req, res, next) => {
+  const errors = {};
+  const { id: theatreId } = req.params;
+  const { movieIds, insert } = req.body ?? {};
+
+  if (!mongoose.isValidObjectId(theatreId)) {
+    errors.theatreId = 'theatreId must be a valid MongoDB ObjectId';
+  }
+
+  if (!Array.isArray(movieIds) || movieIds.length === 0) {
+    errors.movieIds = 'movieIds must be a non-empty array';
+  } else {
+    const invalidMovieIds = movieIds.filter((movieId) => !mongoose.isValidObjectId(movieId));
+    if (invalidMovieIds.length > 0) {
+      errors.movieIds = 'movieIds must contain only valid MongoDB ObjectIds';
+    }
+  }
+
+  if (typeof insert !== 'boolean') {
+    errors.insert = 'insert must be a boolean';
   }
 
   if (Object.keys(errors).length > 0) {

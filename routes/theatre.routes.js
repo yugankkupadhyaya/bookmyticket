@@ -7,8 +7,12 @@ import {
   deleteTheatreController,
   getTheatresByFilterController,
   getTheatresByRatingController,
+  updateMovieInTheatreController,
 } from '../controllers/theatre.controller.js';
-import { validateTheatreRequestMiddleware } from '../middlewares/theatre.middleware.js';
+import {
+  validateMovieUpdateRequestMiddleware,
+  validateTheatreRequestMiddleware,
+} from '../middlewares/theatre.middleware.js';
 
 const theatreRouter = express.Router();
 
@@ -16,6 +20,11 @@ theatreRouter.post('/', validateTheatreRequestMiddleware, createTheatreControlle
 theatreRouter.get('/filter', getTheatresByFilterController);
 theatreRouter.get('/rating', getTheatresByRatingController);
 theatreRouter.get('/', getAllTheatresController);
+theatreRouter.patch(
+  '/:id/movies',
+  validateMovieUpdateRequestMiddleware,
+  updateMovieInTheatreController
+);
 theatreRouter.get('/:id', getTheatreByIdController);
 theatreRouter.put('/:id', validateTheatreRequestMiddleware, updateTheatreController);
 theatreRouter.delete('/:id', deleteTheatreController);

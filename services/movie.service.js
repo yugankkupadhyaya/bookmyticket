@@ -1,5 +1,6 @@
 import Movie from '../models/movie.model.js';
 import { filterByFuzzyField } from '../utils/fuzzy-search.js';
+import { paginationMeta } from '../utils/pagination.js';
 
 const getMovieByIdService = async (id) => {
   try {
@@ -25,7 +26,7 @@ export const updateMovie = async (id, data) => {
   return movie;
 };
 
-export const fetchMovies = async (filter = {}) => {
+export const fetchMovies = async (filter = {}, page = 1, limit = 10) => {
   const movies = await Movie.find();
   const filteredMovies = filter.name
     ? filterByFuzzyField(movies, 'name', filter.name)
@@ -33,5 +34,9 @@ export const fetchMovies = async (filter = {}) => {
   if (!filteredMovies || filteredMovies.length === 0) {
     return { err: 'No movies found', code: 404 };
   }
-  return filteredMovies;
+  const skip = (page - 1) * limit;
+  return {
+    movies: filteredMovies.slice(skip, skip + limit),
+    pagination: paginationMeta(page, limit, filteredMovies.length),
+  };
 };
