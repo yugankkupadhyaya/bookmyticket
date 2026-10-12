@@ -5,8 +5,11 @@ import {
   updateTheatre,
   deleteTheatre,
   fetchTheatresByFilter,
+  searchTheatres,
   fetchTheatresByRating,
   updateMovieInTheatre,
+  fetchMoviesByTheatre,
+  checkMovieInTheatre,
 } from '../services/theatre.service.js';
 import { errorResponse, successResponse } from '../utils/response.js';
 import { getPagination } from '../utils/pagination.js';
@@ -83,6 +86,22 @@ export const getTheatresByFilterController = async (req, res) => {
   }
 };
 
+export const searchTheatresController = async (req, res) => {
+  try {
+    const { page, limit } = getPagination(req.query);
+    const response = await searchTheatres(req.query.q, page, limit);
+
+    if (response.err) {
+      return res.status(response.code).json(errorResponse(response.err, response.err));
+    }
+
+    return res.status(200).json(successResponse('Theatres searched successfully', response));
+  } catch (error) {
+    console.error('Error searching theatres:', error);
+    return res.status(500).json(errorResponse('Error searching theatres', error));
+  }
+};
+
 export const getTheatresByRatingController = async (req, res) => {
   try {
     const { minRating } = req.query;
@@ -121,6 +140,41 @@ export const updateMovieInTheatreController = async (req, res) => {
       return res.status(404).json(errorResponse('Theatre not found', error.message));
     }
 
+    if (error.message === 'One or more movies not found') {
+      return res.status(404).json(errorResponse('Movie not found', error.message));
+    }
+
     res.status(500).json(errorResponse('Error updating movies in theatre', error));
+  }
+};
+
+export const getMoviesByTheatreController = async (req, res) => {
+  try {
+    const { page, limit } = getPagination(req.query);
+    const response = await fetchMoviesByTheatre(req.params.id, page, limit);
+
+    if (response.err) {
+      return res.status(response.code).json(errorResponse(response.err, response.err));
+    }
+
+    return res.status(200).json(successResponse('Movies retrieved for theatre', response));
+  } catch (error) {
+    console.error('Error retrieving movies for theatre:', error);
+    return res.status(500).json(errorResponse('Error retrieving movies for theatre', error));
+  }
+};
+
+export const checkMovieInTheatreController = async (req, res) => {
+  try {
+    const response = await checkMovieInTheatre(req.params.id, req.params.movieId);
+
+    if (response.err) {
+      return res.status(response.code).json(errorResponse(response.err, response.err));
+    }
+
+    return res.status(200).json(successResponse('Movie availability checked', response));
+  } catch (error) {
+    console.error('Error checking movie availability:', error);
+    return res.status(500).json(errorResponse('Error checking movie availability', error));
   }
 };

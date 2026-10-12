@@ -28,6 +28,11 @@ const movieSchema = new mongoose.Schema(
       required: true,
       default: 'Released',
     },
+    theatres: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'Theatre',
+      default: [],
+    },
   },
   { timestamps: true }
 );

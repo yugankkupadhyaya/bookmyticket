@@ -1,128 +1,159 @@
-import { Theatre } from '../models/theatre.model.js';
+import prisma from '../lib/prisma.js';
 import { filterByFuzzyField } from '../utils/fuzzy-search.js';
 import { paginationMeta } from '../utils/pagination.js';
+import { isValidId } from '../utils/ids.js';
 
-export const createTheatre = async (data) => {
-  try {
-    const response = await Theatre.create(data);
-    return response;
-  } catch (error) {
-    console.error('Error creating theatre:', error);
-    throw error;
-  }
-};
+const theatreInclude = { movies: { include: { movie: true } } };
+
+const formatTheatre = (theatre) => ({
+  ...theatre,
+  movies: (theatre.movies || []).map((link) => link.movie || link.movieId),
+});
+
+export const createTheatre = async (data) => prisma.theatre.create({
+  data: {
+    name: data.name,
+    description: data.description,
+    pincode: data.pincode,
+    address: data.address,
+    city: data.city,
+    rating: data.rating ?? 0,
+  },
+});
 
 export const fetchTheatres = async (page = 1, limit = 10) => {
-  try {
-    const skip = (page - 1) * limit;
-    const [theatres, total] = await Promise.all([
-      Theatre.find().sort({ _id: 1 }).skip(skip).limit(limit),
-      Theatre.countDocuments(),
-    ]);
-
-    return { theatres, pagination: paginationMeta(page, limit, total) };
-  } catch (error) {
-    console.error('Error fetching theatres:', error);
-    throw error;
-  }
+  const theatres = await prisma.theatre.findMany({ orderBy: { id: 'asc' }, include: theatreInclude });
+  const skip = (page - 1) * limit;
+  return {
+    theatres: theatres.slice(skip, skip + limit).map(formatTheatre),
+    pagination: paginationMeta(page, limit, theatres.length),
+  };
 };
 
 export const getTheatreById = async (id) => {
-  try {
-    const theatre = await Theatre.findById(id);
-    return theatre;
-  } catch (error) {
-    console.error('Error fetching theatre:', error);
-    throw error;
-  }
+  if (!isValidId(id)) return null;
+  const theatre = await prisma.theatre.findUnique({ where: { id }, include: theatreInclude });
+  return theatre ? formatTheatre(theatre) : null;
 };
 
 export const updateTheatre = async (id, data) => {
-  try {
-    const theatre = await Theatre.findByIdAndUpdate(id, data, { new: true, runValidators: true });
-    return theatre;
-  } catch (error) {
-    console.error('Error updating theatre:', error);
-    throw error;
-  }
+  if (!isValidId(id) || !(await prisma.theatre.findUnique({ where: { id } }))) return null;
+  return prisma.theatre.update({
+    where: { id },
+    data: {
+      name: data.name,
+      description: data.description,
+      pincode: data.pincode,
+      address: data.address,
+      city: data.city,
+      rating: data.rating,
+    },
+    include: theatreInclude,
+  }).then(formatTheatre);
 };
 
 export const deleteTheatre = async (id) => {
+  if (!isValidId(id)) return null;
   try {
-    const theatre = await Theatre.findByIdAndDelete(id);
-    return theatre;
+    return await prisma.theatre.delete({ where: { id } });
   } catch (error) {
-    console.error('Error deleting theatre:', error);
+    if (error.code === 'P2025') return null;
     throw error;
   }
 };
 
 export const fetchTheatresByFilter = async (query, page = 1, limit = 10) => {
-  try {
-    const filter = {};
-    if (query.pincode) filter.pincode = Number(query.pincode);
+  const where = query.pincode ? { pincode: Number(query.pincode) } : undefined;
+  let theatres = await prisma.theatre.findMany({ where, orderBy: { id: 'asc' }, include: theatreInclude });
+  if (query.city) theatres = filterByFuzzyField(theatres, 'city', query.city);
+  if (query.name) theatres = filterByFuzzyField(theatres, 'name', query.name);
+  const skip = (page - 1) * limit;
+  return {
+    theatres: theatres.slice(skip, skip + limit).map(formatTheatre),
+    pagination: paginationMeta(page, limit, theatres.length),
+  };
+};
 
-    let theatres = await Theatre.find(filter);
-    if (query.city) theatres = filterByFuzzyField(theatres, 'city', query.city);
-    if (query.name) theatres = filterByFuzzyField(theatres, 'name', query.name);
-
-    const total = theatres.length;
-    const skip = (page - 1) * limit;
-    return {
-      theatres: theatres.slice(skip, skip + limit),
-      pagination: paginationMeta(page, limit, total),
-    };
-  } catch (error) {
-    console.error('Error fetching theatres by filter:', error);
-    throw error;
-  }
+export const searchTheatres = async (searchTerm, page = 1, limit = 10) => {
+  const normalizedSearchTerm = String(searchTerm ?? '').trim();
+  if (!normalizedSearchTerm) return { err: 'Search query is required', code: 400 };
+  const theatres = await prisma.theatre.findMany({ orderBy: { id: 'asc' }, include: theatreInclude });
+  const nameMatches = new Set(filterByFuzzyField(theatres, 'name', normalizedSearchTerm).map((theatre) => theatre.id));
+  const cityMatches = new Set(filterByFuzzyField(theatres, 'city', normalizedSearchTerm).map((theatre) => theatre.id));
+  const matchedTheatres = theatres.filter((theatre) =>
+    nameMatches.has(theatre.id) || cityMatches.has(theatre.id) || String(theatre.pincode) === normalizedSearchTerm,
+  );
+  const skip = (page - 1) * limit;
+  return {
+    theatres: matchedTheatres.slice(skip, skip + limit).map(formatTheatre),
+    pagination: paginationMeta(page, limit, matchedTheatres.length),
+  };
 };
 
 export const fetchTheatresByRating = async (minRating, page = 1, limit = 10) => {
-  try {
-    const filter = { rating: { $gte: Number(minRating) } };
-    const skip = (page - 1) * limit;
-    const [theatres, total] = await Promise.all([
-      Theatre.find(filter).sort({ _id: 1 }).skip(skip).limit(limit),
-      Theatre.countDocuments(filter),
-    ]);
-
-    return { theatres, pagination: paginationMeta(page, limit, total) };
-  } catch (error) {
-    console.error('Error fetching theatres by rating:', error);
-    throw error;
-  }
+  const theatres = await prisma.theatre.findMany({
+    where: { rating: { gte: Number(minRating) } },
+    orderBy: { id: 'asc' },
+    include: theatreInclude,
+  });
+  const skip = (page - 1) * limit;
+  return {
+    theatres: theatres.slice(skip, skip + limit).map(formatTheatre),
+    pagination: paginationMeta(page, limit, theatres.length),
+  };
 };
 
 export const updateMovieInTheatre = async (theatreId, movieIds, insert) => {
-  const theatre = await Theatre.findById(theatreId);
-
-  if (!theatre) {
-    throw new Error('Theatre not found');
-  }
-
-  const ids = Array.isArray(movieIds) ? movieIds : [movieIds];
+  if (!isValidId(theatreId)) throw new Error('Theatre not found');
+  if (!(await prisma.theatre.findUnique({ where: { id: theatreId } }))) throw new Error('Theatre not found');
+  const ids = [...new Set(movieIds.map((id) => id.toString()))];
+  const movies = await prisma.movie.findMany({ where: { id: { in: ids } }, select: { id: true } });
+  if (movies.length !== ids.length) throw new Error('One or more movies not found');
 
   if (insert) {
-    const existingMovieIds = new Set(theatre.movies.map((movieId) => movieId.toString()));
-    const newMovieIds = ids.filter((movieId) => {
-      const id = movieId.toString();
-
-      if (existingMovieIds.has(id)) {
-        return false;
-      }
-
-      existingMovieIds.add(id);
-      return true;
+    await prisma.movieTheatre.createMany({
+      data: ids.map((movieId) => ({ movieId, theatreId })),
+      skipDuplicates: true,
     });
-
-    theatre.movies.push(...newMovieIds);
   } else {
-    theatre.movies = theatre.movies.filter(
-      (existingMovieId) => !ids.some((movieId) => existingMovieId.toString() === movieId.toString())
-    );
+    await prisma.movieTheatre.deleteMany({ where: { theatreId, movieId: { in: ids } } });
+  }
+  return getTheatreById(theatreId);
+};
+
+export const fetchMoviesByTheatre = async (theatreId, page = 1, limit = 10) => {
+  const theatre = await prisma.theatre.findUnique({ where: { id: theatreId }, include: theatreInclude });
+  if (!theatre) return { err: 'Theatre not found', code: 404 };
+  const allMovies = theatre.movies.map((link) => link.movie);
+  const skip = (page - 1) * limit;
+  return {
+    movies: allMovies.slice(skip, skip + limit),
+    pagination: paginationMeta(page, limit, allMovies.length),
+  };
+};
+
+export const checkMovieInTheatre = async (theatreId, movieId) => {
+  if (!isValidId(theatreId) || !isValidId(movieId)) {
+    return { err: 'Invalid theatre or movie ID', code: 400 };
   }
 
-  await theatre.save();
-  return theatre;
+  const [theatre, movie] = await Promise.all([
+    prisma.theatre.findUnique({ where: { id: theatreId }, select: { id: true } }),
+    prisma.movie.findUnique({ where: { id: movieId }, select: { id: true } }),
+  ]);
+
+  if (!theatre) return { err: 'Theatre not found', code: 404 };
+  if (!movie) return { err: 'Movie not found', code: 404 };
+
+  const relationship = await prisma.movieTheatre.findUnique({
+    where: {
+      movieId_theatreId: { movieId, theatreId },
+    },
+  });
+
+  return {
+    theatreId,
+    movieId,
+    available: Boolean(relationship),
+  };
 };

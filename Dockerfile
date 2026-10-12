@@ -4,7 +4,11 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install -g pnpm && pnpm install
+RUN npm install -g pnpm && \
+    pnpm install \
+      --allow-build=@prisma/client \
+      --allow-build=@prisma/engines \
+      --allow-build=prisma
 
 COPY . .
 

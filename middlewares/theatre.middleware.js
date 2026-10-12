@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
 import { errorResponse } from '../utils/response.js';
+import { isValidId } from '../utils/ids.js';
 
 const requiredTheatreFields = ['name', 'pincode', 'address', 'city'];
 
@@ -39,16 +39,16 @@ export const validateMovieUpdateRequestMiddleware = (req, res, next) => {
   const { id: theatreId } = req.params;
   const { movieIds, insert } = req.body ?? {};
 
-  if (!mongoose.isValidObjectId(theatreId)) {
-    errors.theatreId = 'theatreId must be a valid MongoDB ObjectId';
+  if (!isValidId(theatreId)) {
+    errors.theatreId = 'theatreId must be a valid ID';
   }
 
   if (!Array.isArray(movieIds) || movieIds.length === 0) {
     errors.movieIds = 'movieIds must be a non-empty array';
   } else {
-    const invalidMovieIds = movieIds.filter((movieId) => !mongoose.isValidObjectId(movieId));
+    const invalidMovieIds = movieIds.filter((movieId) => !isValidId(movieId));
     if (invalidMovieIds.length > 0) {
-      errors.movieIds = 'movieIds must contain only valid MongoDB ObjectIds';
+      errors.movieIds = 'movieIds must contain only valid IDs';
     }
   }
 

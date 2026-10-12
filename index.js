@@ -1,6 +1,6 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import prisma from './lib/prisma.js';
 
 import movieRouter from './routes/movie.routes.js';
 import theatreRouter from './routes/theatre.routes.js';
@@ -11,8 +11,6 @@ dotenv.config();
 const app = express();
 
 const PORT = process.env.PORT || 3000;
-const DB_NAME = process.env.DB_NAME || 'mba_db';
-const DB_URL = process.env.DB_URL || `mongodb://localhost:27017/${DB_NAME}`;
 
 app.use(express.json());
 app.use('/mba/api/v1', apiRateLimiter);
@@ -25,8 +23,8 @@ app.get('/', (req, res) => {
 
 const startServer = async () => {
   try {
-    await mongoose.connect(DB_URL);
-    console.log(`Connected to MongoDB: ${DB_NAME}`);
+    await prisma.$connect();
+    console.log('Connected to PostgreSQL');
 
     await connectRedis();
     console.log('Connected to Redis');

@@ -11,6 +11,18 @@ services:
     environment:
       - MONGO_INITDB_DATABASE=mba_db
 
+  postgres:
+    image: postgres:16-alpine
+    container_name: bookmyticket-postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_v2:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=bookmyticket
+      - POSTGRES_PASSWORD=bookmyticket
+      - POSTGRES_DB=bookmyticket
+
   redis:
     image: redis:7-alpine
     container_name: bookmyticket-redis
@@ -26,11 +38,13 @@ services:
       - PORT=3000
       - DB_NAME=mba_db
       - DB_URL=mongodb://mongodb:27017/mba_db
+      - DATABASE_URL=postgresql://bookmyticket:bookmyticket@postgres:5432/bookmyticket?schema=public
       - REDIS_URL=redis://redis:6379
       - RATE_LIMIT_WINDOW_MS=900000
       - RATE_LIMIT_MAX=100
     depends_on:
       - mongodb
+      - postgres
       - redis
     volumes:
       - .:/app
@@ -38,3 +52,4 @@ services:
 
 volumes:
   mongodb_data:
+  postgres_data_v2:

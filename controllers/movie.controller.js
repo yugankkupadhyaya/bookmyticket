@@ -1,6 +1,12 @@
-import Movie from '../models/movie.model.js';
-import getMovieByIdService, { fetchMovies } from '../services/movie.service.js';
-import { updateMovie } from '../services/movie.service.js';
+import {
+  createMovie as createMovieService,
+  getMovieByIdService,
+  fetchMovies,
+  fetchMoviesWithTheatres,
+  fetchTheatresByMovie,
+  updateMovie,
+  deleteMovie,
+} from '../services/movie.service.js';
 import { getPagination } from '../utils/pagination.js';
 import {
   ErrorResponseBody,
@@ -14,7 +20,7 @@ export const createMovie = async (req, res) => {
   console.log('Request body:', req.body);
 
   try {
-    const movie = await Movie.create(req.body);
+    const movie = await createMovieService(req.body);
 
     console.log('Movie created successfully:', movie);
 
@@ -30,7 +36,7 @@ export const getAllMovies = async (req, res) => {
   console.log('GET /movies request received');
 
   try {
-    console.log('Fetching movies from MongoDB...');
+    console.log('Fetching movies from PostgreSQL...');
 
     const { page, limit } = getPagination(req.query);
     const response = await fetchMovies({}, page, limit);
@@ -47,7 +53,7 @@ export const getAllMovies = async (req, res) => {
 
 export const getMovieById = async (req, res) => {
   try {
-    console.log('Fetching movie from MongoDB...');
+    console.log('Fetching movie from PostgreSQL...');
 
     const response = await getMovieByIdService(req.params.id);
     if (response.err) {
@@ -69,9 +75,9 @@ export const getMovieById = async (req, res) => {
 
 export const deleteMovieById = async (req, res) => {
   try {
-    console.log('Deleting movie from MongoDB...');
+    console.log('Deleting movie from PostgreSQL...');
 
-    const response = await Movie.findByIdAndDelete(req.params.id);
+    const response = await deleteMovie(req.params.id);
     if (!response) {
       return res.status(404).json(errorResponse('Movie not found', 'Movie not found'));
     }
@@ -85,7 +91,7 @@ export const deleteMovieById = async (req, res) => {
 
 export const updateMovieById = async (req, res) => {
   try {
-    console.log('Updating movie in MongoDB...');
+    console.log('Updating movie in PostgreSQL...');
 
     const response = await updateMovie(req.params.id, req.body);
 
@@ -119,5 +125,39 @@ export const getMoviesByFilter = async (req, res) => {
     console.error('Error retrieving movies by filter:', error);
 
     return res.status(500).json(errorResponse('Error retrieving movies by filter', error));
+  }
+};
+
+export const searchMovies = async (req, res) => {
+  try {
+    const { page, limit } = getPagination(req.query);
+    const response = await fetchMoviesWithTheatres(req.query, page, limit);
+
+    if (response.err) {
+      return res.status(response.code).json(
+        errorResponse('Movie search failed', response.err),
+      );
+    }
+
+    return res.status(200).json(successResponse('Movies searched successfully', response));
+  } catch (error) {
+    console.error('Error searching movies:', error);
+    return res.status(500).json(errorResponse('Error searching movies', error));
+  }
+};
+
+export const getTheatresByMovie = async (req, res) => {
+  try {
+    const { page, limit } = getPagination(req.query);
+    const response = await fetchTheatresByMovie(req.params.id, page, limit);
+
+    if (response.err) {
+      return res.status(response.code).json(errorResponse(response.err, response.err));
+    }
+
+    return res.status(200).json(successResponse('Theatres retrieved for movie', response));
+  } catch (error) {
+    console.error('Error retrieving theatres for movie:', error);
+    return res.status(500).json(errorResponse('Error retrieving theatres for movie', error));
   }
 };
