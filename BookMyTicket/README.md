@@ -225,9 +225,6 @@ Node.js, Express, MySQL, Sequelize, RabbitMQ, Razorpay, JWT, Nodemailer, Cron Sc
 ---
 
 ## Future Work
-- Consolidate the six service repos into git submodules (or a monorepo) so
-  the whole platform comes up from a single `git clone --recursive`, instead
-  of cloning six repos by hand into matching folder names
 - API documentation (Swagger/OpenAPI or a published Postman collection) for each service
 - Centralized structured logging / observability (e.g. correlation IDs across service calls)
 - Automated test suite (unit + integration) with CI pipeline
@@ -238,6 +235,6 @@ Node.js, Express, MySQL, Sequelize, RabbitMQ, Razorpay, JWT, Nodemailer, Cron Sc
 
 ## Running Locally
 See [Quick Start](#quick-start) above for the one-command Docker setup. Each
-service also has standalone setup instructions in its respective repo, linked
+service also has standalone setup instructions in its respective directory, linked
 in the [Services](#services) table, for running or debugging a single service
 outside the full stack.
