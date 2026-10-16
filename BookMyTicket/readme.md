@@ -20,12 +20,12 @@ status, notifications).
 
 | Service | Responsibility | Repo |
 |---|---|---|
-| API Gateway | Routing, rate limiting, request logging | [BookMyTicket-Api-Gateway](https://github.com/Chandan-kr-tiwari/BookMyTicket-Api-Gateway) |
-| User Service | Authentication, JWT, RBAC, flight-company approval | [BookMyTicket-User-Service](https://github.com/Chandan-kr-tiwari/BookMyTicket-User-Service) |
-| Flight Service | City / Airport / Flight CRUD | [BookMyTicket-Flight-Service](https://github.com/Chandan-kr-tiwari/BookMyTicket-Flight-Service) |
-| Booking Service | Booking flow, seat locking, cron cleanup | [BookMyTicket-Booking-Service](https://github.com/Chandan-kr-tiwari/BookMyTicket-Booking-Service) |
-| Payment Service | Razorpay integration, verification, idempotency | [BookMyTicket-Payment-Service](https://github.com/Chandan-kr-tiwari/BookMyTicket-Payment-Service) |
-| Notification Service | Async email notifications via RabbitMQ | [BookMyTicket-Notification-Service](https://github.com/Chandan-kr-tiwari/BookMyTicket-Notification-Service) |
+| API Gateway | Routing, rate limiting, request logging | [`../bookmyticket-api-gateway/`](../bookmyticket-api-gateway/) |
+| User Service | Authentication, JWT, RBAC, flight-company approval | [`../bookmyticket-user-service/`](../bookmyticket-user-service/) |
+| Flight Service | City / Airport / Flight CRUD | [`../bookmyticket-flight-service/`](../bookmyticket-flight-service/) |
+| Booking Service | Booking flow, seat locking, cron cleanup | [`../bookmyticket-booking-service/`](../bookmyticket-booking-service/) |
+| Payment Service | Razorpay integration, verification, idempotency | [`../bookmyticket-payment-service/`](../bookmyticket-payment-service/) |
+| Notification Service | Async email notifications via RabbitMQ | [`../bookmyticket-notification-service/`](../bookmyticket-notification-service/) |
 
 ## Key Features
 

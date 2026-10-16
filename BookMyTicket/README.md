@@ -33,28 +33,19 @@ Compose command.
 The entire platform — all six services, MySQL, and RabbitMQ — comes up with
 one command, including database creation, migrations, and seed data.
 
-This repo (`BookMyTicket`) holds the orchestration layer (`docker-compose.yml` +
-`init.sql`). The six service repos need to sit **next to it as sibling
-folders**, since Compose builds each service from a relative `../` path.
-Clone them all like this:
+This repository contains the orchestration layer and all six services in one
+monorepo. Clone it once:
 
 ```bash
-mkdir bookmyticket-platform && cd bookmyticket-platform
-
-git clone https://github.com/Chandan-kr-tiwari/BookMyTicket.git
-git clone https://github.com/Chandan-kr-tiwari/BookMyTicket-Flight-Service.git       bookmyticket-flight-service
-git clone https://github.com/Chandan-kr-tiwari/BookMyTicket-User-Service.git        bookmyticket-user-service
-git clone https://github.com/Chandan-kr-tiwari/BookMyTicket-Booking-Service.git     bookmyticket-booking-service
-git clone https://github.com/Chandan-kr-tiwari/BookMyTicket-Payment-Service.git     bookmyticket-payment-service
-git clone https://github.com/Chandan-kr-tiwari/BookMyTicket-Notification-Service.git bookmyticket-notification-service
-git clone https://github.com/Chandan-kr-tiwari/BookMyTicket-Api-Gateway.git         bookmyticket-api-gateway
+git clone https://github.com/yugankkupadhyaya/bookmyticket.git
+cd bookmyticket
 ```
 
-You should end up with this layout:
+The repository layout is:
 
 ```
-bookmyticket-platform/
-├── BookMyTicket/                        ← this repo (docker-compose.yml, init.sql)
+bookmyticket/
+├── BookMyTicket/                        ← orchestration (docker-compose.yml, init.sql)
 ├── bookmyticket-flight-service/
 ├── bookmyticket-user-service/
 ├── bookmyticket-booking-service/
@@ -96,9 +87,8 @@ manual DB setup, no per-service `npm install` + `npm run migrate` dance.
 | RabbitMQ management UI | `http://localhost:15672` (`admin` / `admin123`) |
 
 
-**Note on local repo structure:** the current setup expects six separate
-clones kept in sync by folder name. Consolidating these into git submodules
-(or a single monorepo) is a natural next step — see [Future Work](#future-work).
+All services are versioned together in this repository, while each service
+retains its own package manifest, Dockerfile, migrations, and README.
 
 ---
 
@@ -128,12 +118,12 @@ status, notifications).
 
 | Service | Responsibility | Look here first for | Repo |
 |---|---|---|---|
-| API Gateway | Routing, rate limiting, request logging | Centralized routing & rate-limit middleware | [BookMyTicket-Api-Gateway](https://github.com/Chandan-kr-tiwari/BookMyTicket-Api-Gateway) |
-| User Service | Authentication, JWT, RBAC, flight-company approval | JWT/RBAC middleware, approval workflow logic | [BookMyTicket-User-Service](https://github.com/Chandan-kr-tiwari/BookMyTicket-User-Service) |
-| Flight Service | City / Airport / Flight CRUD | Ownership-scoped CRUD (admin vs. flight_company) | [BookMyTicket-Flight-Service](https://github.com/Chandan-kr-tiwari/BookMyTicket-Flight-Service) |
-| Booking Service | Booking flow, seat locking, cron cleanup | **Row-level locking transaction** for seat allocation, cron-based booking expiry | [BookMyTicket-Booking-Service](https://github.com/Chandan-kr-tiwari/BookMyTicket-Booking-Service) |
-| Payment Service | Razorpay integration, verification, idempotency | **Idempotency check** before confirming payment, Razorpay signature verification | [BookMyTicket-Payment-Service](https://github.com/Chandan-kr-tiwari/BookMyTicket-Payment-Service) |
-| Notification Service | Async email notifications via RabbitMQ | RabbitMQ consumer setup, decoupled event handling | [BookMyTicket-Notification-Service](https://github.com/Chandan-kr-tiwari/BookMyTicket-Notification-Service) |
+| API Gateway | Routing, rate limiting, request logging | Centralized routing & rate-limit middleware | [`../bookmyticket-api-gateway/`](../bookmyticket-api-gateway/) |
+| User Service | Authentication, JWT, RBAC, flight-company approval | JWT/RBAC middleware, approval workflow logic | [`../bookmyticket-user-service/`](../bookmyticket-user-service/) |
+| Flight Service | City / Airport / Flight CRUD | Ownership-scoped CRUD (admin vs. flight_company) | [`../bookmyticket-flight-service/`](../bookmyticket-flight-service/) |
+| Booking Service | Booking flow, seat locking, cron cleanup | **Row-level locking transaction** for seat allocation, cron-based booking expiry | [`../bookmyticket-booking-service/`](../bookmyticket-booking-service/) |
+| Payment Service | Razorpay integration, verification, idempotency | **Idempotency check** before confirming payment, Razorpay signature verification | [`../bookmyticket-payment-service/`](../bookmyticket-payment-service/) |
+| Notification Service | Async email notifications via RabbitMQ | RabbitMQ consumer setup, decoupled event handling | [`../bookmyticket-notification-service/`](../bookmyticket-notification-service/) |
 
 ---
 

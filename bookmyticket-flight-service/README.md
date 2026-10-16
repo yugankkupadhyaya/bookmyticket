@@ -4,7 +4,7 @@ Owns the core flight domain: cities, airports, airplanes, flights, and each
 flight's live seat inventory. Every other service that needs flight or seat
 data — Booking, Payment — goes through this one.
 
-> Part of the [BookMyTicket](https://github.com/Chandan-kr-tiwari/BookMyTicket)
+> Part of the [BookMyTicket monorepo](../)
 > microservices platform. See the main repo for the full architecture,
 > Docker Compose setup, and links to the other five services.
 
@@ -93,7 +93,7 @@ flow (handled in the Booking Service) reserves a seat by calling
 `PATCH /flights/:id/seats/internal` as part of a row-level-locked database
 transaction — so two simultaneous booking requests for the same flight can't
 both decrement the same seat. See the
-[Booking Service README](https://github.com/Chandan-kr-tiwari/BookMyTicket-Booking-Service)
+[Booking Service README](../bookmyticket-booking-service/)
 for the transaction details.
 
 ## A Known Consideration
@@ -121,7 +121,7 @@ Node.js, Express, MySQL, Sequelize, JWT
 ## Running Locally
 
 **As part of the full platform (recommended):** see the
-[BookMyTicket hub repo](https://github.com/Chandan-kr-tiwari/BookMyTicket) — a single
+[BookMyTicket hub directory](../BookMyTicket/) — the orchestration layer in this monorepo
 `docker-compose up --build` brings this service up alongside the other five,
 MySQL, and RabbitMQ, with migrations and seed data applied automatically.
 
