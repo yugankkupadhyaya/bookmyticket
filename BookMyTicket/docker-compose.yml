@@ -1,0 +1,165 @@
+services:
+
+  mysql:
+    image: mysql:8
+    container_name: bookmyticket-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpass"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: bookmyticket-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+
+  flight-service:
+    build: ../bookmyticket-flight-service
+    container_name: bookmyticket-flight-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: docker
+      PORT: 3000
+      DATABASE_URL: mysql://bookmyticket_user:bookmyticket123!@mysql:3306/bookmyticket
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+    ports:
+      - "3000:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  user-service:
+    build: ../bookmyticket-user-service
+    container_name: bookmyticket-user-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: docker
+      PORT: 3004
+      DATABASE_URL: mysql://user:user@mysql:3306/bookmyticket_users
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+    ports:
+      - "3004:3004"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  booking-service:
+    build: ../bookmyticket-booking-service
+    container_name: bookmyticket-booking-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: docker
+      PORT: 3001
+      DATABASE_URL: mysql://bookmyticketbookinguser:bookmyticket@mysql:3306/bookmyticket_booking
+      BOOKMYTICKET_FLIGHT_SERVICE: http://flight-service:3000
+      RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+    ports:
+      - "3001:3001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      flight-service:
+        condition: service_started
+
+  payment-service:
+    build: ../bookmyticket-payment-service
+    container_name: bookmyticket-payment-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: docker
+      PORT: 3002
+      DATABASE_URL: mysql://bookmyticketpaymentuser:payment@mysql:3306/bookmyticket_payment
+      BOOKMYTICKET_FLIGHT_SERVICE: http://flight-service:3000
+      BOOKMYTICKET_BOOKING_SERVICE: http://booking-service:3001
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
+      RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+    ports:
+      - "3002:3002"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      flight-service:
+        condition: service_started
+      booking-service:
+        condition: service_started
+
+  notification-service:
+    build: ../bookmyticket-notification-service
+    container_name: bookmyticket-notification-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: docker
+      PORT: 3003
+      DATABASE_URL: mysql://notification_user:noti@mysql:3306/notification_db
+      BOOKMYTICKET_USER_SERVICE: http://user-service:3004
+      GMAIL_EMAIL: ${GMAIL_EMAIL}
+      GMAIL_PASS: ${GMAIL_PASS}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASSWORD: admin123
+    ports:
+      - "3003:3003"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+
+  api-gateway:
+    build: ../bookmyticket-api-gateway
+    container_name: bookmyticket-api-gateway
+    restart: unless-stopped
+    environment:
+      PORT: 3005
+      BOOKMYTICKET_USER_SERVICE: http://user-service:3004
+      BOOKMYTICKET_FLIGHT_SERVICE: http://flight-service:3000
+      BOOKMYTICKET_BOOKING_SERVICE: http://booking-service:3001
+      BOOKMYTICKET_PAYMENT_SERVICE: http://payment-service:3002
+    ports:
+      - "3005:3005"
+    depends_on:
+      - user-service
+      - flight-service
+      - booking-service
+      - payment-service
+
+volumes:
+  mysql_data:
